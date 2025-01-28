@@ -36,3 +36,4 @@ dist/
 # Configurações específicas do IDE
 .vscode/
 .idea/
+.ipynb_checkpoints/
