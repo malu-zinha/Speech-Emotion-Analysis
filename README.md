@@ -102,6 +102,3 @@ Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar
 
 ---
 
-**Autor:** [Seu Nome]  
-**Contato:** seuemail@dominio.com
-
