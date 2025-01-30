@@ -4,8 +4,7 @@ matplotlib
 seaborn
 librosa
 scikit-learn
-tensorflow      # Se usar TensorFlow para treinar o modelo
-torch           # Se optar pelo PyTorch
+tensorflow    
 streamlit
 soundfile       # Necessário para lidar com arquivos de áudio
 kaggle          # Caso você queira, pode usar a API do Kaggle para pegar os audios
