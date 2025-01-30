@@ -1,48 +1,90 @@
 import streamlit as st
-import librosa
-import librosa.display
 import numpy as np
-import matplotlib.pyplot as plt
-import pickle
+import librosa
+import joblib
+import tensorflow as tf
+import os
+import soundfile as sf
 
-# Carregar o modelo treinado
-MODEL_PATH = "models/audio_emotion_model.pkl"
-with open(MODEL_PATH, "rb") as file:
-    model = pickle.load(file)
+# Carregar o modelo e o scaler
+MODEL_PATH = "models/audio_emotion_model.keras"
+SCALER_PATH = "models/scaler.pkl"
 
-# Função para extrair features do áudio
-def extract_features(audio_file):
-    audio, sample_rate = librosa.load(audio_file, res_type='kaiser_fast')
-    mfccs = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
-    mfccs_scaled = np.mean(mfccs.T, axis=0)
-    return mfccs_scaled.reshape(1, -1)
+model = tf.keras.models.load_model(MODEL_PATH)
+scaler = joblib.load(SCALER_PATH)
 
-# Configuração da página
-st.title("Reconhecimento de Emoções em Áudio")
-st.write("Envie um arquivo de áudio para identificar a emoção presente nele.")
+# Lista de emoções
+EMOTIONS = ["angry", "calm", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
 
-# Upload do arquivo de áudio
-uploaded_file = st.file_uploader("Envie seu arquivo de áudio (.wav, .mp3)", type=["wav", "mp3"])
+# Função para extrair features
+def extract_features(audio_path):
+    data, sr = librosa.load(audio_path, sr=16000, mono=True)
+    features = []
+
+    # Zero Crossing Rate
+    zcr = np.mean(librosa.feature.zero_crossing_rate(y=data).T, axis=0)
+    features.extend(zcr)
+
+    # Chroma STFT
+    chroma = np.mean(librosa.feature.chroma_stft(y=data, sr=sr).T, axis=0)
+    features.extend(chroma)
+
+    # MFCCs 
+    mfccs = np.mean(librosa.feature.mfcc(y=data, sr=sr, n_mfcc=13).T, axis=0)
+    features.extend(mfccs)
+
+    # RMS
+    rms = np.mean(librosa.feature.rms(y=data).T, axis=0)
+    features.extend(rms)
+
+    # Mel Spectrogram 
+    mel = np.mean(librosa.feature.melspectrogram(y=data, sr=sr, n_mels=128).T, axis=0)
+    features.extend(mel)
+
+    # Garantir que tenha exatamente 162 features (ou truncar/zerar)
+    target_length = 162
+    if len(features) < target_length:
+        features.extend([0] * (target_length - len(features))) 
+    elif len(features) > target_length:
+        features = features[:target_length]  
+
+    return np.array(features).reshape(1, -1)
+
+# Configuração do app
+st.title("Detector de Emoções em Áudio 🎵")
+st.write("Envie um arquivo de áudio para análise!")
+
+# Upload de arquivo de áudio
+uploaded_file = st.file_uploader("Escolha um arquivo de áudio...", type=["wav", "mp3", "ogg"])
 
 if uploaded_file is not None:
-    # Exibir informações do arquivo enviado
-    st.audio(uploaded_file, format='audio/wav')
-    
-    # Extração de features
-    try:
-        features = extract_features(uploaded_file)
-        
-        # Predição da emoção
-        prediction = model.predict(features)
-        probabilities = model.predict_proba(features)
-        
-        # Exibir resultado
-        st.write("### Emoção Detectada:", prediction[0].capitalize())
-        
-        # Exibir probabilidades
-        st.write("### Probabilidades de Cada Emoção:")
-        for emotion, prob in zip(model.classes_, probabilities[0]):
-            st.write(f"{emotion.capitalize()}: {prob:.2f}")
+    # Salvar temporariamente o áudio
+    temp_audio_path = "temp_audio.wav"
+    with open(temp_audio_path, "wb") as f:
+        f.write(uploaded_file.getbuffer())
 
-    except Exception as e:
-        st.error("Erro ao processar o arquivo de áudio. Verifique o formato e tente novamente.")
+    # Reproduzir o áudio enviado
+    st.audio(temp_audio_path, format="audio/wav")
+
+    # Extrair features
+    features = extract_features(temp_audio_path)
+
+    # Normalizar os dados com o scaler treinado
+    features_scaled = scaler.transform(features)
+
+    # Ajustar formato para o modelo
+    features_scaled = np.expand_dims(features_scaled, axis=2)
+
+    # Fazer a previsão
+    prediction = model.predict(features_scaled)
+    predicted_emotion = EMOTIONS[np.argmax(prediction)]
+
+    # Exibir o resultado
+    st.subheader("🎭 Emoção Detectada:")
+    st.write(f"**{predicted_emotion.upper()}**")
+
+    # Exibir probabilidades
+    st.bar_chart(prediction[0])
+
+    # Remover o arquivo temporário
+    os.remove(temp_audio_path)
