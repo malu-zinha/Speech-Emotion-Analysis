@@ -2,6 +2,8 @@
 
 Este é um projeto de **classificação de emoções em áudio**, onde é utilizado o dataset **RAVDESS** para treinar um modelo capaz de identificar a emoção presente em arquivos de áudio enviados pelos usuários. A aplicação conta com uma interface interativa desenvolvida em **Streamlit**, permitindo que os usuários enviem áudios para análise.
 
+![Descrição da Imagem](https://i.imgur.com/33MqEWQ.png)
+
 ## Pipeline do Projeto
 
 ### 1. Coleta e Organização dos Dados
@@ -11,8 +13,13 @@ Este é um projeto de **classificação de emoções em áudio**, onde é utiliz
   - As emoções são representadas por números nos nomes dos arquivos.
 
 - **Organização**:
-  - Os arquivos de áudio foram carregados e classificados com base na emoção correspondente.
-  - Um dataframe foi criado para armazenar as features extraídas e as emoções rotuladas.
+  - Modality (01 = full-AV, 02 = video-only, 03 = audio-only).
+  - Vocal channel (01 = speech, 02 = song).
+  - Emotion (01 = neutral, 02 = calm, 03 = happy, 04 = sad, 05 = angry, 06 = fearful, 07 = disgust, 08 = surprised).
+  - Emotional intensity (01 = normal, 02 = strong). NOTE: There is no strong intensity for the 'neutral' emotion.
+  - Statement (01 = "Kids are talking by the door", 02 = "Dogs are sitting by the door").
+  - Repetition (01 = 1st repetition, 02 = 2nd repetition).
+  - Actor (01 to 24. Odd numbered actors are male, even numbered actors are female).
 
 ### 2. Extração de Features
 
@@ -29,7 +36,7 @@ As features foram extraídas usando a biblioteca **librosa** e normalizadas para
 
 - **Modelo Utilizado**:
   - Um modelo de aprendizado de máquina foi treinado para classificar as emoções com base nas features extraídas.
-  - Frameworks como **Scikit-learn** ou **TensorFlow/Keras** foram utilizados.
+  - Frameworks como **TensorFlow/Keras** foram utilizados.
 
 - **Divisão dos Dados**:
   - O dataset foi dividido em conjuntos de treinamento, validação e teste.
@@ -39,7 +46,6 @@ As features foram extraídas usando a biblioteca **librosa** e normalizadas para
 
 - **Funcionalidades**:
   - Upload de arquivos de áudio pelo usuário.
-  - Visualização do waveform e espectrograma do áudio enviado.
   - Predição da emoção baseada no modelo treinado.
   - Exibição de resultados com a probabilidade de cada emoção.
 
@@ -83,7 +89,7 @@ As features foram extraídas usando a biblioteca **librosa** e normalizadas para
 - **Python**
 - **Streamlit**
 - **Librosa**
-- **Scikit-learn** / **TensorFlow/Keras**
+- **TensorFlow/Keras**
 - **Matplotlib/Seaborn** (para visualizações)
 
 ---
@@ -96,9 +102,8 @@ As features foram extraídas usando a biblioteca **librosa** e normalizadas para
 
 ---
 
-## Contribuições
-
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests com melhorias para este projeto.
+## Conclusão
+Podemos ver que nosso modelo é mais preciso na predição das emoções surpresa e raiva, o que faz sentido, pois os arquivos de áudio dessas emoções diferem bastante dos outros em aspectos como tom, velocidade, etc. Caso você queira contribuir sinta-se a vontade e me contate em: schmittluigi@gmail.com ou se você me conhece fale comigo :)
 
 ---
 
