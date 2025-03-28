@@ -2,6 +2,8 @@
 
 Este é um projeto de **classificação de emoções em áudio**, onde é utilizado o dataset **RAVDESS** para treinar um modelo capaz de identificar a emoção presente em arquivos de áudio enviados pelos usuários. A aplicação conta com uma interface interativa desenvolvida em **Streamlit**, permitindo que os usuários enviem áudios para análise.
 
+### 🎥 Vídeo Explicativo: [Mini Projeto 2 - Trilha](https://www.youtube.com/watch?v=xf8GMCGjloQ&ab_channel=LuigiSchmitt)
+
 ![Descrição da Imagem](https://i.imgur.com/33MqEWQ.png)
 
 ## Pipeline do Projeto
