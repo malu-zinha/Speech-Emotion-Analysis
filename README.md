@@ -65,24 +65,26 @@ As features foram extraídas usando a biblioteca **librosa** e normalizadas para
 
 ## Como Executar o Projeto
 
-1. Clone este repositório:
+1. Faça um fork desse repositório para o seu perfil do GitHub
+
+2. Clone este repositório:
    ```bash
    git clone https://github.com/seu-usuario/audio-emotion-classification.git
    ```
 
-2. Instale as dependências:
+3. Instale as dependências:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Baixe o dataset RAVDESS e organize os arquivos conforme descrito no código.
+4. Baixe o dataset RAVDESS e organize os arquivos conforme descrito no código.
 
-4. Execute o aplicativo Streamlit:
+5. Execute o aplicativo Streamlit:
    ```bash
    streamlit run app.py
    ```
 
-5. Envie um arquivo de áudio no aplicativo e veja o modelo predizer a emoção presente.
+6. Envie um arquivo de áudio no aplicativo e veja o modelo predizer a emoção presente.
 
 ---
 
