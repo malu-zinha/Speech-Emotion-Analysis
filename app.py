@@ -6,15 +6,19 @@ import tensorflow as tf
 import os
 import soundfile as sf
 
+# --------------------------------- PARTE 1: EXTRAIR FEATURES --------------------------------- #
+
 # Carregar o modelo e o scaler
-MODEL_PATH = "models/audio_emotion_model.keras"
-SCALER_PATH = "models/scaler.pkl"
+MODEL_PATH = "models/audio_emotion_model.keras"  # Example
+SCALER_PATH = "models/scaler.pkl"                # Example
 
 model = tf.keras.models.load_model(MODEL_PATH)
 scaler = joblib.load(SCALER_PATH)
 
 # Lista de emoções
-EMOTIONS = ["angry", "calm", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
+EMOTIONS = ["angry", "calm", "disgust", "fear",
+            "happy", "neutral", "sad", "surprise"]
+
 
 # Função para extrair features
 def extract_features(audio_path):
@@ -22,69 +26,68 @@ def extract_features(audio_path):
     features = []
 
     # Zero Crossing Rate
-    zcr = np.mean(librosa.feature.zero_crossing_rate(y=data).T, axis=0)
-    features.extend(zcr)
+    # Extract the zcr here
+    # features.extend(zcr)
 
     # Chroma STFT
-    chroma = np.mean(librosa.feature.chroma_stft(y=data, sr=sr).T, axis=0)
-    features.extend(chroma)
+    # Extract the chroma stft here
+    # features.extend(chroma)
 
-    # MFCCs 
-    mfccs = np.mean(librosa.feature.mfcc(y=data, sr=sr, n_mfcc=13).T, axis=0)
-    features.extend(mfccs)
+    # MFCCs
+    # Extract the mfccs here
+    # features.extend(mfccs)
 
     # RMS
-    rms = np.mean(librosa.feature.rms(y=data).T, axis=0)
-    features.extend(rms)
+    # Extract the rms here
+    # features.extend(rms)
 
-    # Mel Spectrogram 
-    mel = np.mean(librosa.feature.melspectrogram(y=data, sr=sr, n_mels=128).T, axis=0)
-    features.extend(mel)
+    # Mel Spectrogram
+    # Extract the mel here
+    # features.extend(mel)
 
     # Garantir que tenha exatamente 162 features (ou truncar/zerar)
     target_length = 162
     if len(features) < target_length:
-        features.extend([0] * (target_length - len(features))) 
+        features.extend([0] * (target_length - len(features)))
     elif len(features) > target_length:
-        features = features[:target_length]  
+        features = features[:target_length]
 
     return np.array(features).reshape(1, -1)
 
-# Configuração do app
-st.title("Detector de Emoções em Áudio 🎵")
-st.write("Envie um arquivo de áudio para análise!")
 
-# Upload de arquivo de áudio
-uploaded_file = st.file_uploader("Escolha um arquivo de áudio...", type=["wav", "mp3", "ogg"])
+# --------------------------------- PARTE 2: STREAMLIT --------------------------------- #
+
+# Configuração do app Streamlit (Título e descrição)
+# Code here
+
+# Upload de arquivo de áudio (wav, mp3, ogg)
+uploaded_file = st.file_uploader(
+    "Escolha um arquivo de áudio...", type=["wav", "mp3", "ogg"])
 
 if uploaded_file is not None:
     # Salvar temporariamente o áudio
-    temp_audio_path = "temp_audio.wav"
-    with open(temp_audio_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
+    # Code here
 
     # Reproduzir o áudio enviado
-    st.audio(temp_audio_path, format="audio/wav")
+    # Code here
 
     # Extrair features
-    features = extract_features(temp_audio_path)
+    # Code here
 
     # Normalizar os dados com o scaler treinado
-    features_scaled = scaler.transform(features)
+    # Code here
 
     # Ajustar formato para o modelo
-    features_scaled = np.expand_dims(features_scaled, axis=2)
+    # Code here
 
-    # Fazer a previsão
-    prediction = model.predict(features_scaled)
-    predicted_emotion = EMOTIONS[np.argmax(prediction)]
+    # Fazer a predição
+    # Code here
 
     # Exibir o resultado
-    st.subheader("🎭 Emoção Detectada:")
-    st.write(f"**{predicted_emotion.upper()}**")
+    # Code here
 
-    # Exibir probabilidades
-    st.bar_chart(prediction[0])
+    # Exibir probabilidades (gráfico de barras)
+    # Code here
 
     # Remover o arquivo temporário
-    os.remove(temp_audio_path)
+    # Code here
