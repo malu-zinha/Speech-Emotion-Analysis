@@ -1,6 +1,7 @@
 # Diretórios e arquivos gerados por ambientes virtuais
 venv/
 .env/
+.venv/
 
 # Arquivos de configuração do sistema operacional
 .DS_Store
