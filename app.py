@@ -4,90 +4,133 @@ import librosa
 import joblib
 import tensorflow as tf
 import os
-import soundfile as sf
+import tempfile
+import pandas as pd
+import plotly.express as px
+import tempfile
 
 # --------------------------------- PARTE 1: EXTRAIR FEATURES --------------------------------- #
 
-# Carregar o modelo e o scaler
-MODEL_PATH = "models/audio_emotion_model.keras"  # Example
-SCALER_PATH = "models/scaler.pkl"                # Example
+# Carregando o modelo e o scaler:
+MODEL_PATH = "notebooks/models/fashion_model.keras"
+SCALER_PATH = "notebooks/models/scaler.pkl"
 
 model = tf.keras.models.load_model(MODEL_PATH)
 scaler = joblib.load(SCALER_PATH)
 
-# Lista de emoções
+# Lista de emoções:
 EMOTIONS = ["angry", "calm", "disgust", "fear",
             "happy", "neutral", "sad", "surprise"]
 
+# Traduzindo a lista de emoções para português:
+EMOTIONS_PT = {
+    "angry": "Raiva",
+    "calm": "Calma", 
+    "disgust": "Nojo",
+    "fear": "Medo",
+    "happy": "Felicidade",
+    "neutral": "Neutra",
+    "sad": "Tristeza",
+    "surprise": "Surpresa"
+}
 
-# Função para extrair features
-def extract_features(audio_path):
-    data, sr = librosa.load(audio_path, sr=16000, mono=True)
-    features = []
 
-    # Zero Crossing Rate
-    # Extract the zcr here
-    # features.extend(zcr)
+def extract_features(audio_path): # Função para extrair features:
 
-    # Chroma STFT
-    # Extract the chroma stft here
-    # features.extend(chroma)
+    data, sample_rate = librosa.load(audio_path, duration=2.5, offset=0.6)
+    result = np.array([])
 
-    # MFCCs
-    # Extract the mfccs here
-    # features.extend(mfccs)
+    # Zero Crossing Rate:
+    zcr = np.mean(librosa.feature.zero_crossing_rate(y=data).T, axis=0)
+    result = np.hstack((result, zcr))
 
-    # RMS
-    # Extract the rms here
-    # features.extend(rms)
+    # Chroma_stft:
+    chroma_stft = np.mean(librosa.feature.chroma_stft(y=data, sr=sample_rate).T, axis=0)
+    result = np.hstack((result, chroma_stft))
 
-    # Mel Spectrogram
-    # Extract the mel here
-    # features.extend(mel)
+    # MFCC:
+    mfcc = np.mean(librosa.feature.mfcc(y=data, sr=sample_rate, n_mfcc=40).T, axis=0)
+    result = np.hstack((result, mfcc))
 
-    # Garantir que tenha exatamente 162 features (ou truncar/zerar)
-    target_length = 162
-    if len(features) < target_length:
-        features.extend([0] * (target_length - len(features)))
-    elif len(features) > target_length:
-        features = features[:target_length]
+    # Root Mean Square Value:
+    rms = np.mean(librosa.feature.rms(y=data).T, axis=0)
+    result = np.hstack((result, rms))
 
-    return np.array(features).reshape(1, -1)
+    # MelSpectrogram:
+    mel = np.mean(librosa.feature.melspectrogram(y=data, sr=sample_rate).T, axis=0)
+    result = np.hstack((result, mel))
+    
+    # Garantindo que tenha exatamente 182 features (ou truncar/zerar):
+    target_length = 182
+    if len(result) < target_length:
+        result = np.pad(result, (0, target_length - len(result)), 'constant')
+    elif len(result) > target_length:
+        result = result[:target_length]
+    
+    return result.reshape(1, -1)
 
 
 # --------------------------------- PARTE 2: STREAMLIT --------------------------------- #
 
-# Configuração do app Streamlit (Título e descrição)
-# Code here
+# Configuração do app Streamlit (Título e descrição):
+st.title("Análise de Emoções em Áudio:")
+st.write("Este aplicativo reconhece emoções em arquivos de áudio :D")
 
-# Upload de arquivo de áudio (wav, mp3, ogg)
-uploaded_file = st.file_uploader(
-    "Escolha um arquivo de áudio...", type=["wav", "mp3", "ogg"])
+# Upload de arquivo de áudio (wav, mp3, ogg):
+uploaded_file = st.file_uploader("Escolha um arquivo de áudio...", type=["wav", "mp3", "ogg"])
 
 if uploaded_file is not None:
-    # Salvar temporariamente o áudio
-    # Code here
 
-    # Reproduzir o áudio enviado
-    # Code here
+    # Salvando temporariamente o áudio:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+        tmp_file.write(uploaded_file.read())
+        temp_audio_path = tmp_file.name
 
-    # Extrair features
-    # Code here
+    # Reproduzindo o áudio enviado:
+    st.audio(uploaded_file, format='audio/wav')
 
-    # Normalizar os dados com o scaler treinado
-    # Code here
+    # Extraindo features:
+    features = extract_features(temp_audio_path)
 
-    # Ajustar formato para o modelo
-    # Code here
+    # Normalizando os dados com o scaler treinado:
+    features = scaler.transform(features)
 
-    # Fazer a predição
-    # Code here
+    # Ajustando formato para o modelo:
+    features = features.reshape(1, -1)
 
-    # Exibir o resultado
-    # Code here
+    # Fazendo a predição de emoções:
+    prediction = model.predict(features)
+    predicted_class = np.argmax(prediction, axis=1)[0]
+    predicted_emotion = EMOTIONS[predicted_class]
 
-    # Exibir probabilidades (gráfico de barras)
-    # Code here
+    # Exibindo o resultado:
+    predicted_emotion_pt = EMOTIONS_PT[predicted_emotion]
+    st.success(f"🎭 Emoção reconhecida: **{predicted_emotion_pt.upper()}**")
+    
+    # Exibindo as probabilidades:
+    probabilities = prediction[0] 
+    probabilities_norm = probabilities / np.sum(probabilities) * 100
+    
+    # Criando DataFrame com emoções:
+    emotions_pt = [EMOTIONS_PT[emotion] for emotion in EMOTIONS]
+    emotion_data = pd.DataFrame({
+        'Emoção': emotions_pt,
+        'Probabilidade (%)': np.round(probabilities_norm, 1)
+    })
+    
+    emotion_colors = ['#fe88b1','#b097e7', '#8be0a4', '#9eb9f3', '#f89c74', '#f6cf71', '#66c5cc', '#cccccc']
+    
+    st.subheader("📊 Probabilidades de cada emoção:")
+    fig = px.bar(
+        emotion_data, 
+        x='Emoção', 
+        y='Probabilidade (%)',
+        color='Emoção',
+        color_discrete_sequence=emotion_colors,
+        title="Análise de Emoções"
+    )
+    fig.update_layout(showlegend=False)
+    st.plotly_chart(fig)
 
-    # Remover o arquivo temporário
-    # Code here
+    # Removendo o arquivo temporário:
+    os.remove(temp_audio_path)
