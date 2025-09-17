@@ -7,5 +7,5 @@ scikit-learn
 tensorflow    
 streamlit
 soundfile      # Necessário para lidar com arquivos de áudio
-kaggle         # Caso você queira, pode usar a API do Kaggle para pegar os audiosipykernels      # Necessário para rodar o notebook no Jupyter
+kaggle         # Caso você queira, pode usar a API do Kaggle para pegar os audios
 ipykernel      # Necessário para rodar o notebook no Jupyter
