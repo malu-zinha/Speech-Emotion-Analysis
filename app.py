@@ -34,6 +34,16 @@ EMOTIONS_PT = {
     "surprise": "Surpresa"
 }
 
+EMOTIONS_PT_EMOJI = {
+    "angry": "Raiva 😡",
+    "calm": "Calma 😌", 
+    "disgust": "Nojo 🤢",
+    "fear": "Medo 🥶",
+    "happy": "Felicidade 😄",
+    "neutral": "Neutra 😐",
+    "sad": "Tristeza 😭",
+    "surprise": "Surpresa 😮"
+}   
 
 def extract_features(audio_path): # Função para extrair features:
 
@@ -73,8 +83,8 @@ def extract_features(audio_path): # Função para extrair features:
 # --------------------------------- PARTE 2: STREAMLIT --------------------------------- #
 
 # Configuração do app Streamlit (Título e descrição):
-st.title("Análise de Emoções em Áudio:")
-st.write("Este aplicativo reconhece emoções em arquivos de áudio :D")
+st.title("Speech-Emotion-Analysis:")
+st.write("Este aplicativo reconhece emoções em arquivos de áudio.")
 
 # Upload de arquivo de áudio (wav, mp3, ogg):
 uploaded_file = st.file_uploader("Escolha um arquivo de áudio...", type=["wav", "mp3", "ogg"])
@@ -104,7 +114,7 @@ if uploaded_file is not None:
     predicted_emotion = EMOTIONS[predicted_class]
 
     # Exibindo o resultado:
-    predicted_emotion_pt = EMOTIONS_PT[predicted_emotion]
+    predicted_emotion_pt = EMOTIONS_PT_EMOJI[predicted_emotion]
     st.success(f"🎭 Emoção reconhecida: **{predicted_emotion_pt.upper()}**")
     
     # Exibindo as probabilidades:
@@ -117,9 +127,9 @@ if uploaded_file is not None:
         'Emoção': emotions_pt,
         'Probabilidade (%)': np.round(probabilities_norm, 1)
     })
-    
-    emotion_colors = ['#fe88b1','#b097e7', '#8be0a4', '#9eb9f3', '#f89c74', '#f6cf71', '#66c5cc', '#cccccc']
-    
+
+    emotion_colors = ['#fe88b1', '#66c5cc', '#8be0a4', '#b097e7', '#f6cf71', '#cccccc', '#9eb9f3', '#f89c74']
+
     st.subheader("📊 Probabilidades de cada emoção:")
     fig = px.bar(
         emotion_data, 
